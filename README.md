@@ -1,5 +1,5 @@
 # go-client-server
-Go project with simple client / server implementation
+Go demo project for simple client / server implementation
 
 Hopefully someone might find it helpfull to look at this code to address
 some of of the problems a developer has when beginning with golang.
