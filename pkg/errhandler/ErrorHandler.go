@@ -2,7 +2,7 @@ package errhandler
 
 import "fmt"
 
-func HandleError(err error) {
+func PanicOnError(err error) {
 	if err != nil {
 		panic(err)
 	}
@@ -20,5 +20,5 @@ type ClosableWithError interface {
 }
 
 func CloseWithPanic(closable ClosableWithError) {
-	HandleError(closable.Close())
+	PanicOnError(closable.Close())
 }

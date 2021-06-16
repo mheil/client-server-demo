@@ -18,7 +18,7 @@ func main() {
 	fmt.Println("client started")
 
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", *host, *port))
-	errhandler.HandleError(err)
+	errhandler.PanicOnError(err)
 	defer errhandler.CloseWithPanic(conn)
 
 	fmt.Printf("%s<->%s connected\n", conn.LocalAddr(), conn.RemoteAddr())
@@ -52,7 +52,7 @@ func readIncommingMessages(conn net.Conn, quit chan bool, completed chan bool) {
 			return
 		}
 
-		errhandler.HandleError(err)
+		errhandler.PanicOnError(err)
 
 		message = strings.TrimSpace(message)
 		fmt.Printf("%s<->%s <-- %s\n", conn.LocalAddr(), conn.RemoteAddr(), message)
@@ -67,7 +67,7 @@ func readCommands(msg chan string, conn net.Conn) {
 			errhandler.CloseWithPanic(conn)
 			return
 		}
-		errhandler.HandleError(err)
+		errhandler.PanicOnError(err)
 		msg <- strings.TrimSpace(text)
 	}
 }
@@ -81,7 +81,7 @@ func handleOutgoingData(msg chan string, quit chan bool, conn net.Conn, complete
 		select {
 		case text := <-msg:
 			_, err := fmt.Fprintln(conn, text)
-			errhandler.HandleError(err)
+			errhandler.PanicOnError(err)
 		case <-quit:
 			return
 		}

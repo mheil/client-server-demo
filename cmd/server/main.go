@@ -17,7 +17,7 @@ func main() {
 	flag.Parse()
 
 	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
-	errhandler.HandleError(err)
+	errhandler.PanicOnError(err)
 
 	for {
 		fmt.Printf("%s listening\n", ln.Addr())
