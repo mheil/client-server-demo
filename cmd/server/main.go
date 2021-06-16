@@ -59,7 +59,7 @@ func handleConnection(conn net.Conn) {
 				fmt.Printf("%s<->%s sending bye failed: %s\n", conn.LocalAddr(), conn.RemoteAddr(), err)
 			}
 			fmt.Printf("%s<->%s closing\n", conn.LocalAddr(), conn.RemoteAddr())
-			errhandler.CloseWithPanic(conn)
+			errhandler.CloseWithPanicOnError(conn)
 			break
 		}
 	}

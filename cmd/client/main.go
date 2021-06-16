@@ -19,7 +19,7 @@ func main() {
 
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", *host, *port))
 	errhandler.PanicOnError(err)
-	defer errhandler.CloseWithPanic(conn)
+	defer errhandler.CloseWithPanicOnError(conn)
 
 	fmt.Printf("%s<->%s connected\n", conn.LocalAddr(), conn.RemoteAddr())
 
@@ -64,7 +64,7 @@ func readCommands(msg chan string, conn net.Conn) {
 	for {
 		text, err := reader.ReadString('\n')
 		if err == io.EOF {
-			errhandler.CloseWithPanic(conn)
+			errhandler.CloseWithPanicOnError(conn)
 			return
 		}
 		errhandler.PanicOnError(err)

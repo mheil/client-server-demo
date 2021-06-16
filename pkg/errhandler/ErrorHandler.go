@@ -19,6 +19,6 @@ type ClosableWithError interface {
 	Close() error
 }
 
-func CloseWithPanic(closable ClosableWithError) {
+func CloseWithPanicOnError(closable ClosableWithError) {
 	PanicOnError(closable.Close())
 }
