@@ -30,7 +30,7 @@ func main() {
 	completed := make(chan bool)
 	go handleOutgoingData(outMsg, outQuit, conn, completed)
 
-	go readIncommingMessages(conn, outQuit, completed)
+	go readIncomingMessages(conn, outQuit, completed)
 
 	<-completed
 	<-completed
@@ -38,7 +38,7 @@ func main() {
 	fmt.Printf("%s<->%s finished\n", conn.LocalAddr(), conn.RemoteAddr())
 }
 
-func readIncommingMessages(conn net.Conn, quit chan bool, completed chan bool) {
+func readIncomingMessages(conn net.Conn, quit chan bool, completed chan bool) {
 	defer func() {
 		completed <- true
 	}()
