@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"client-server/pkg/errhandler"
+	"client-server/pkg/msg"
 	"flag"
 	"fmt"
 	"io"
@@ -10,6 +11,8 @@ import (
 	"os"
 	"strings"
 )
+
+var mp = msg.NewMessagePrinter()
 
 func main() {
 	host := flag.String("host", "localhost", "hostname of the server")
@@ -21,7 +24,7 @@ func main() {
 	errhandler.PanicOnError(err)
 	defer errhandler.CloseWithPanicOnError(conn)
 
-	fmt.Printf("%s <-> %s connected\n", conn.LocalAddr(), conn.RemoteAddr())
+	mp.PrintInOut(conn, "connected")
 
 	outMsg := make(chan string)
 	go readCommands(outMsg, conn)
@@ -35,7 +38,7 @@ func main() {
 	<-completed
 	<-completed
 
-	fmt.Printf("%s <-> %s finished\n", conn.LocalAddr(), conn.RemoteAddr())
+	mp.PrintInOut(conn, "finished")
 }
 
 func readIncomingMessages(conn net.Conn, quit chan bool, completed chan bool) {
@@ -47,7 +50,7 @@ func readIncomingMessages(conn net.Conn, quit chan bool, completed chan bool) {
 	for {
 		message, err := reader.ReadString('\n')
 		if err == io.EOF {
-			fmt.Printf("%s <-> %s closed\n", conn.LocalAddr(), conn.RemoteAddr())
+			mp.PrintInOut(conn, "closed")
 			quit <- true
 			return
 		}
@@ -55,7 +58,7 @@ func readIncomingMessages(conn net.Conn, quit chan bool, completed chan bool) {
 		errhandler.PanicOnError(err)
 
 		message = strings.TrimSpace(message)
-		fmt.Printf("%s <-- %s %s\n", conn.LocalAddr(), conn.RemoteAddr(), message)
+		mp.PrintIn(conn, message)
 	}
 }
 
@@ -72,15 +75,15 @@ func readCommands(msg chan string, conn net.Conn) {
 	}
 }
 
-func handleOutgoingData(msg chan string, quit chan bool, conn net.Conn, completed chan bool) {
+func handleOutgoingData(messages chan string, quit chan bool, conn net.Conn, completed chan bool) {
 	defer func() {
 		completed <- true
 	}()
 
 	for {
 		select {
-		case text := <-msg:
-			fmt.Printf("%s --> %s '%s'\n", conn.LocalAddr(), conn.RemoteAddr(), text)
+		case text := <-messages:
+			mp.PrintOut(conn, text)
 			_, err := fmt.Fprintln(conn, text)
 			errhandler.PanicOnError(err)
 		case <-quit:

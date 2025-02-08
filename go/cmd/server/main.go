@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"client-server/pkg/errhandler"
+	"client-server/pkg/msg"
 	"flag"
 	"fmt"
 	"io"
@@ -10,6 +11,8 @@ import (
 	"strings"
 	"time"
 )
+
+var mp = msg.NewMessagePrinter()
 
 func main() {
 	fmt.Println("server started")
@@ -42,38 +45,38 @@ func handleConnection(conn net.Conn) {
 	for {
 		message, err := reader.ReadString('\n')
 		if err == io.EOF {
-			fmt.Printf("%s <-> %s closed\n", conn.LocalAddr(), conn.RemoteAddr())
+			mp.PrintInOut(conn, "closed")
 			break
 		}
 
 		if err != nil {
-			fmt.Printf("%s <-> %s failed: %s\n", conn.LocalAddr(), conn.RemoteAddr(), err)
+			mp.PrintInOut(conn, "failed %s", err)
 			break
 		}
 
 		message = strings.TrimSpace(message)
 		fmt.Printf("%s <-- %s '%s'\n", conn.LocalAddr(), conn.RemoteAddr(), message)
 		if message == "exit" {
-			fmt.Printf("%s --> %s bye\n", conn.LocalAddr(), conn.RemoteAddr())
+			mp.PrintOut(conn, "bye")
 			_, err = fmt.Fprintln(conn, "bye")
 			if err != nil {
-				fmt.Printf("%s <-> %s sending bye failed: %s\n", conn.LocalAddr(), conn.RemoteAddr(), err)
+				mp.PrintInOut(conn, "sending bye failed: %s", err)
 			}
-			fmt.Printf("%s <-> %s closing\n", conn.LocalAddr(), conn.RemoteAddr())
+			mp.PrintInOut(conn, "closing")
 			errhandler.CloseWithPanicOnError(conn)
 			break
 		}
 		if message == "time" {
 			timeMsg := time.Now().Format(time.RFC3339)
-			fmt.Printf("%s --> %s %s\n", conn.LocalAddr(), conn.RemoteAddr(), timeMsg)
+			mp.PrintOut(conn, timeMsg)
 			_, err = fmt.Fprintln(conn, timeMsg)
 			if err != nil {
-				fmt.Printf("%s <-> %s sending bye failed: %s\n", conn.LocalAddr(), conn.RemoteAddr(), err)
-				fmt.Printf("%s <-> %s closing\n", conn.LocalAddr(), conn.RemoteAddr())
+				mp.PrintInOut(conn, "sending time failed: %s", err)
+				mp.PrintInOut(conn, "closing")
 				errhandler.CloseWithPanicOnError(conn)
 				break
 			}
 		}
 	}
-	fmt.Printf("%s <-> %s finished\n", conn.LocalAddr(), conn.RemoteAddr())
+	mp.PrintOut(conn, "finished")
 }
